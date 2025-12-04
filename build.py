@@ -65,7 +65,7 @@ for python_path in python_paths.values():
         else:
             subprocess.check_call([python_path, "setup.py", "bdist_wheel"])
     except:
-        subprocess.check_call([python_path, "-m", "pip", "install", "wheel"])
+        subprocess.check_call([python_path, "-m", "pip", "install", "--upgrade", "wheel", "setuptools"])
         if i == 0:
             subprocess.check_call([python_path, "setup.py", "sdist", "bdist_wheel"])
         else:
@@ -73,7 +73,7 @@ for python_path in python_paths.values():
 
     if platform.system() == "Linux":
         machine = platform.machine()
-        files = glob.glob(f"dist/tree_sitter_glsl37-*-linux_{machine}.whl")
+        files = glob.glob(f"dist/tree_sitter_opencl-*-linux_{machine}.whl")
         for file in files:
             try:
                 subprocess.check_call([python_path, "-m", "auditwheel", "repair", file, f"--plat=manylinux_2_5_{machine}", "-w", "dist"])
