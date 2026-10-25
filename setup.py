@@ -16,7 +16,7 @@ class Build(build):
 
 setup(
     name="tree-sitter-opencl",
-    version="0.0.1",
+    version="0.0.2",
     packages=find_packages("bindings/python"),
     package_dir={"": "bindings/python"},
     package_data={
