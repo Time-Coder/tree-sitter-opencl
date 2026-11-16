@@ -3,7 +3,10 @@ from platform import system
 
 from setuptools import Extension, find_packages, setup
 from distutils.command.build import build
-from wheel.bdist_wheel import bdist_wheel
+try:
+    from wheel.bdist_wheel import bdist_wheel  # noqa: F401  (registers the command)
+except ImportError:  # pragma: no cover - a build without wheel cannot bdist_wheel
+    bdist_wheel = None
 
 
 class Build(build):
@@ -16,7 +19,7 @@ class Build(build):
 
 setup(
     name="tree-sitter-opencl",
-    version="0.0.2",
+    version="0.0.4",
     packages=find_packages("bindings/python"),
     package_dir={"": "bindings/python"},
     package_data={
@@ -46,5 +49,6 @@ setup(
     cmdclass={
         "build": Build
     },
+    install_requires=["tree-sitter>=0.20.0"],
     zip_safe=False
 )

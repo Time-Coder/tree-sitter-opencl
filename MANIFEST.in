@@ -1,0 +1,16 @@
+# The extension compiles src/parser.c against src/tree_sitter/parser.h, and
+# setuptools' default sdist includes only the .c files -- the header is left out,
+# so a `pip install` from the sdist failed with
+# "fatal error C1083: Cannot open include file: 'tree_sitter/parser.h'".
+# Found by building this sdist in a bare CPython 3.7 venv; the wheel matrix never
+# sees the problem because wheels are built from the checkout, not the sdist.
+recursive-include src *.c *.h
+recursive-include src/tree_sitter *.h
+recursive-include bindings/python/tree_sitter_opencl *.c *.py *.pyi py.typed
+recursive-include queries *.scm
+include grammar.js
+include binding.gyp
+include package.json
+include Cargo.toml
+include LICENSE
+include README.md
