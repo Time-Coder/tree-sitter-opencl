@@ -22,8 +22,25 @@ CHECK = (
 
 
 def wheel_for(ver: str, arch: str) -> str | None:
-    matches = sorted(glob.glob(os.path.join(DIST, "tree_sitter_opencl-0.0.2-cp%s-*-%s.whl" % (ver, arch))))
-    return matches[0] if matches else None
+    """Newest wheel in dist/ for one interpreter and architecture.
+
+    The version used to be spelled into this glob (0.0.2), so every release
+    after that reported "no wheel" for all eighteen interpreters even when
+    dist/ held the matching files. The glob is version-agnostic now and the
+    newest match wins, which is what a checkout that has built two releases
+    should test.
+    """
+    pattern = os.path.join(DIST, "tree_sitter_opencl-*-cp%s-*-%s.whl" % (ver, arch))
+    matches = glob.glob(pattern)
+    if not matches:
+        return None
+
+    def version_key(path: str) -> tuple:
+        name = os.path.basename(path)
+        version = name.split("-", 1)[1].rsplit("-", 3)[0]
+        return tuple(int(part) for part in version.split(".") if part.isdigit())
+
+    return sorted(matches, key=version_key)[-1]
 
 
 def main() -> int:
