@@ -1,0 +1,87 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tree-sitter-opencl"
+# The version lives in tree_sitter_opencl/__init__.py as a literal, so a caller,
+# a checkout that is not installed, and the built metadata all read one value.
+# `attr` is parsed out of the source by setuptools' AST reader, never imported --
+# which matters here because importing the package needs `_binding`, and that
+# extension does not exist until after the build.
+dynamic = ["version"]
+description = "An OpenCL C grammar for tree-sitter, with Python bindings"
+readme = "README.md"
+requires-python = ">=3.7"
+# The `{ text = ... }` table rather than the PEP 639 `license = "MIT"` string:
+# setuptools 68 is the last release that installs on Python 3.7, and it rejects
+# the bare string as an invalid definition.
+license = { text = "MIT" }
+authors = [
+    { name = "Bing-Hui WANG", email = "binghui.wang@foxmail.com" },
+]
+keywords = ["tree-sitter", "opencl", "parser", "grammar", "gpgpu"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Programming Language :: C",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+    "Topic :: Software Development :: Compilers",
+    "Topic :: Text Editors :: Syntax Highlighting",
+    "Typing :: Typed",
+]
+# A runtime dependency, not an extra: `tree_sitter_opencl/__init__.py` imports
+# tree_sitter at module scope to build the Language, so plain
+# `pip install tree-sitter-opencl` has to pull it.
+dependencies = ["tree-sitter>=0.20.0"]
+
+[project.optional-dependencies]
+# `importlib.metadata` arrived in 3.8; on 3.7 the `__version__` lookup falls back
+# to this backport. Conditional rather than unconditional so 3.8+ installs nothing.
+dev = ["pytest>=8", "ruff>=0.9"]
+
+[project.urls]
+Homepage = "https://github.com/Time-Coder/tree-sitter-opencl"
+Source = "https://github.com/Time-Coder/tree-sitter-opencl"
+"Upstream grammar" = "https://github.com/lefp/tree-sitter-opencl"
+Tracker = "https://github.com/Time-Coder/tree-sitter-opencl/issues"
+
+[tool.setuptools]
+package-dir = { "" = "bindings/python" }
+zip-safe = false
+
+[tool.setuptools.packages.find]
+where = ["bindings/python"]
+
+[tool.setuptools.package-data]
+tree_sitter_opencl = ["*.pyi", "py.typed"]
+"tree_sitter_opencl.queries" = ["*.scm"]
+
+[tool.setuptools.dynamic]
+version = { attr = "tree_sitter_opencl.__version__" }
+
+# One wheel per *platform*, not per interpreter. The extension is compiled
+# against the limited API (`Py_LIMITED_API = 0x03070000`) and tagged abi3, so a
+# single cp37-abi3 wheel installs on CPython 3.7 through 3.15 on that platform.
+# That replaced an eighteen-wheel matrix (3.7-3.15 x 32/64-bit) for a grammar
+# whose binding is a few hundred bytes of stable-API glue.
+[tool.cibuildwheel]
+build = "cp37-abi3-*"
+build-frontend = "build"
+test-requires = ["tree-sitter>=0.20"]
+test-command = "python -c \"import tree_sitter_opencl; tree_sitter_opencl.language()\""
+
+[tool.pytest.ini_options]
+testpaths = ["bindings/python/tree_sitter_opencl/tests"]

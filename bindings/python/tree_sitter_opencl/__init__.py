@@ -27,6 +27,13 @@ import ctypes
 
 import tree_sitter
 
+# `__version__` is the one place the release number is written. pyproject.toml
+# reads it from here with `attr` -- setuptools parses the literal with an AST
+# reader rather than importing this module, which is required here because the
+# module needs `_binding` and that extension does not exist until after the
+# build. The published metadata and this attribute therefore cannot disagree.
+__version__ = "0.0.5"
+
 # The capsule name ``binding.c`` hands to ``PyCapsule_New``. ``GetPointer``
 # checks it, so a capsule from some other grammar is refused instead of being
 # reinterpreted as this one's TSLanguage.

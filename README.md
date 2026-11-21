@@ -33,8 +33,19 @@ existing `tree-sitter` pin — `language()` adapts to the installed release from
 0.20.4 through 0.26.x, see [Compatibility](#tree-sitter-version-compatibility).
 
 Prebuilt wheels are published for CPython 3.7 through 3.15 on 64-bit and
-32-bit Windows. Each wheel carries a `_binding.pyd` compiled against its own
-interpreter, so the wheel tags are `cp37`…`cp315` rather than `abi3`.
+32-bit Windows — **one wheel per architecture, not one per interpreter**. The
+extension targets the [limited API](https://docs.python.org/3/c-api/stable.html#stable-application-binary-interface)
+(`Py_LIMITED_API=0x03070000`) and is tagged `cp37-abi3`, so the same
+`tree_sitter_opencl-0.0.5-cp37-abi3-win_amd64.whl` installs on every 64-bit
+CPython from 3.7 to 3.15. Earlier releases of this package shipped one wheel
+per interpreter (`cp37`…`cp315`); the abi3 tag replaces that matrix.
+
+The binding also answers its version:
+
+```python
+import tree_sitter_opencl
+tree_sitter_opencl.__version__          # '0.0.5' — the release the wheel was built from
+```
 
 On Linux and macOS there is no current wheel: `pip` builds the extension from
 the source distribution, which needs a C compiler. That path was verified by
@@ -250,9 +261,9 @@ the checkout:
 
 | file | what it does |
 | --- | --- |
-| `build_matrix.py` | builds the sdist and one wheel per interpreter, CPython 3.7–3.15 × 32/64-bit Windows |
-| `verify_dist.py` | checks every wheel's tag and that it carries a `.pyd` |
-| `test_wheels.py` | installs each wheel into its matching interpreter and parses a kernel |
+| `build_matrix.py` | builds the two abi3 wheels (one per architecture) and loads each on all eighteen interpreters |
+| `verify_dist.py` | checks the wheel tags are `cp37-abi3` and that each carries a compiled extension |
+| `test_wheels.py` | installs the built wheels into every interpreter and parses a kernel (verify-only) |
 | `upload.py` | uploads the wheels *and* the sdist with `twine` |
 
 The binding's own tests live at
